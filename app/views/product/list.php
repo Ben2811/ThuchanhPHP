@@ -1,31 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
+<?php include 'app/views/shares/header.php'; ?>
+<h1>Danh sách sản phẩm</h1>
+<a href="/WebBanHang/Product/add" class="btn btn-success mb-2">Thêm sản phẩm mới</a>
+<ul class="list-group">
+    <?php foreach ($products as $product): ?>
+        <li class="list-group-item">
+            <h2><a href="/WebBanHang/Product/show/<?php echo $product->id; ?>"><?php
+               echo htmlspecialchars($product->name, ENT_QUOTES, 'UTF-8'); ?></a></h2>
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Danh sách sản phẩm</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+            <?php if (isset($product->image) && $product->image): ?>
+                <img src="/WebBanHang/<?php echo $product->image; ?>" alt="Product Image" style="max-width: 100px;">
+            <?php endif; ?>
 
-<body class="container mt-5">
-    <h1 class="mb-4">Danh sách sản phẩm</h1>
-    <a href="/project1/Product/add" class="btn btn-primary mb-3">Thêm sản phẩm mới</a>
-    <ul class="list-group">
-        <?php foreach ($products as $product): ?>
-            <li class="list-group-item">
-                <?php if ($product->getImage()): ?>
-                    <img src="/<?php echo htmlspecialchars($product->getImage(), ENT_QUOTES, 'UTF-8'); ?>" alt="Product Image" class="img-thumbnail mb-3">
-                <?php endif; ?>
-                <h2><?php echo htmlspecialchars($product->getName(), ENT_QUOTES, 'UTF-8'); ?></h2>
-                <p><?php echo htmlspecialchars($product->getDescription(), ENT_QUOTES, 'UTF-8'); ?></p>
-                <p><strong>Giá:</strong> <?php echo htmlspecialchars($product->getPrice(), ENT_QUOTES, 'UTF-8'); ?></p>
-                <a href="/project1/Product/edit/<?php echo $product->getID(); ?>" class="btn btn-warning btn-sm">Sửa</a>
-                <a href="/project1/Product/delete/<?php echo $product->getID(); ?>" class="btn btn-danger btn-sm"
-                    onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">Xóa</a>
-            </li>
-        <?php endforeach; ?>
-    </ul>
-</body>
+            <p><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></p>
 
-</html>
+            <p>Giá:
+                <?php echo htmlspecialchars($product->price, ENT_QUOTES, 'UTF-8');?> VND
+            </p>
+
+            <p>Danh mục: <?php echo htmlspecialchars(
+                $product->category_name,
+                ENT_QUOTES,
+                'UTF-8'
+            ); ?></p>
+
+            <div class="mt-2">
+                <a href="/WebBanHang/Product/show/<?php echo $product->id; ?>" class="btn btn-info">Xem chi tiết</a>
+                <a href="/WebBanHang/Product/edit/<?php echo $product->id; ?>" class="btn btn-warning">Sửa</a>
+                <a href="/WebBanHang/Product/delete/<?php echo $product->id; ?>" class="btn btn-danger" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?');">Xóa</a>
+            </div>
+        </li>
+    <?php endforeach; ?>
+</ul>
+<?php include 'app/views/shares/footer.php'; ?>

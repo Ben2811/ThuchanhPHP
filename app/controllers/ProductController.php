@@ -9,10 +9,11 @@ class ProductController
     private $db;
     public function __construct()
     {
+        session_start();
         $this->db = (new Database())->getConnection();
         $this->productModel = new ProductModel($this->db);
     }
-    
+
     public function list()
     {
         $products = $this->productModel->getProducts();
@@ -20,9 +21,9 @@ class ProductController
     }
     public function index()
     {
-        $this->list(); 
+        $this->list();
     }
-    
+
     public function show($id)
     {
         $product = $this->productModel->getProductById($id);
@@ -168,5 +169,137 @@ class ProductController
         }
         header('Location: /WebBanHang/Product/cart');
     }
+    public function removeFromCart($id = null)
+    {
+        // Handle AJAX request
+        if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['CONTENT_TYPE'] === 'application/json') {
+            header('Content-Type: application/json');
+            
+            $input = json_decode(file_get_contents('php://input'), true);
+            $productId = $input['product_id'] ?? null;
+            
+            if (!$productId) {
+                echo json_encode(['success' => false, 'message' => 'Invalid product ID']);
+                return;
+            }
+            
+            if (isset($_SESSION['cart'][$productId])) {
+                unset($_SESSION['cart'][$productId]);
+                
+                echo json_encode([
+                    'success' => true,
+                    'message' => 'Product removed from cart',
+                    'cart_count' => count($_SESSION['cart'])
+                ]);
+            } else {
+                echo json_encode(['success' => false, 'message' => 'Product not found in cart']);
+            }
+            return;
+        }
+        
+        // Handle regular GET request
+        if ($id) {
+            if (isset($_SESSION['cart'][$id])) {
+                unset($_SESSION['cart'][$id]);
+            }
+            header('Location: /WebBanHang/Product/cart');
+        } else {
+            echo "ID sản phẩm không hợp lệ.";
+        }
+    }
+    public function updateCart()
+    {
+        header('Content-Type: application/json');
+        
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            echo json_encode(['success' => false, 'message' => 'Invalid request method']);
+            return;
+        }
+        
+        $input = json_decode(file_get_contents('php://input'), true);
+        $productId = $input['product_id'] ?? null;
+        $quantity = $input['quantity'] ?? null;
+        
+        if (!$productId || !$quantity || $quantity < 1) {
+            echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
+            return;
+        }
+        
+        if (isset($_SESSION['cart'][$productId])) {
+            $_SESSION['cart'][$productId]['quantity'] = (int)$quantity;
+            
+            echo json_encode([
+                'success' => true,
+                'item_price' => $_SESSION['cart'][$productId]['price'],
+                'message' => 'Cart updated successfully'
+            ]);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Product not found in cart']);
+        }
+    }
+    public function clearCart()
+    {
+        unset($_SESSION['cart']);
+        header('Location: /WebBanHang/Product/cart');
+    }
+    public function cart()
+    {
+        $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
+        include 'app/views/product/cart.php';
+    }
+    public function checkout()
+    {
+        include 'app/views/product/checkout.php';
+    }
+    public function processCheckout()
+    {
+        if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+            $name = $_POST['name'];
+            $phone = $_POST['phone'];
+            $address = $_POST['address'];
+            // Kiểm tra giỏ hàng
+            if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
+                echo "Giỏ hàng trống.";
+                return;
+            }
+            // Bắt đầu giao dịch
+            $this->db->beginTransaction();
+            try {
+                // Lưu thông tin đơn hàng vào bảng orders
+                $query = "INSERT INTO orders (name, phone, address) VALUES (:name, :phone, :address)";
+                $stmt = $this->db->prepare($query);
+                $stmt->bindParam(':name', $name);
+                $stmt->bindParam(':phone', $phone);
+                $stmt->bindParam(':address', $address);
+                $stmt->execute();
+                $order_id = $this->db->lastInsertId();
+                // Lưu chi tiết đơn hàng vào bảng order_details
+                $cart = $_SESSION['cart'];
+                foreach ($cart as $product_id => $item) {
+                    $query = "INSERT INTO order_details (order_id, product_id, quantity, price) VALUES (:order_id, :product_id, :quantity, :price)";
+                    $stmt = $this->db->prepare($query);
+                    $stmt->bindParam(':order_id', $order_id);
+                    $stmt->bindParam(':product_id', $product_id);
+                    $stmt->bindParam(':quantity', $item['quantity']);
+                    $stmt->bindParam(':price', $item['price']);
+                    $stmt->execute();
+                }
+                // Xóa giỏ hàng sau khi đặt hàng thành công
+                unset($_SESSION['cart']);
+                // Commit giao dịch
+                $this->db->commit();
+                // Chuyển hướng đến trang xác nhận đơn hàng - Fix URL
+                header('Location: /WebBanHang/Product/orderConfirmation');
+                exit();
+            } catch (Exception $e) {
+                // Rollback giao dịch nếu có lỗi
+                $this->db->rollBack();
+                echo "Đã xảy ra lỗi khi xử lý đơn hàng: " . $e->getMessage();
+            }
+        }
+    }
+    public function orderConfirmation()
+    {
+        include 'app/views/product/orderConfirmation.php';
+    }
 }
-?>

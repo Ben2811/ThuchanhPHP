@@ -206,8 +206,7 @@ class ProductController
         } else {
             echo "ID sản phẩm không hợp lệ.";
         }
-    }
-    public function updateCart()
+    }    public function updateCart()
     {
         header('Content-Type: application/json');
         
@@ -216,26 +215,46 @@ class ProductController
             return;
         }
         
-        $input = json_decode(file_get_contents('php://input'), true);
+        // Get raw input and decode
+        $rawInput = file_get_contents('php://input');
+        $input = json_decode($rawInput, true);
+        
+        // Check for JSON decode errors
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            echo json_encode(['success' => false, 'message' => 'Invalid JSON data']);
+            return;
+        }
+        
         $productId = $input['product_id'] ?? null;
         $quantity = $input['quantity'] ?? null;
         
-        if (!$productId || !$quantity || $quantity < 1) {
+        // Validate inputs
+        if (!$productId || !is_numeric($quantity) || $quantity < 1) {
             echo json_encode(['success' => false, 'message' => 'Invalid parameters']);
             return;
         }
         
-        if (isset($_SESSION['cart'][$productId])) {
-            $_SESSION['cart'][$productId]['quantity'] = (int)$quantity;
-            
-            echo json_encode([
-                'success' => true,
-                'item_price' => $_SESSION['cart'][$productId]['price'],
-                'message' => 'Cart updated successfully'
-            ]);
-        } else {
-            echo json_encode(['success' => false, 'message' => 'Product not found in cart']);
+        // Check if cart exists
+        if (!isset($_SESSION['cart'])) {
+            echo json_encode(['success' => false, 'message' => 'Cart not found']);
+            return;
         }
+        
+        // Check if product exists in cart
+        if (!isset($_SESSION['cart'][$productId])) {
+            echo json_encode(['success' => false, 'message' => 'Product not found in cart']);
+            return;
+        }
+        
+        // Update quantity
+        $_SESSION['cart'][$productId]['quantity'] = (int)$quantity;
+        
+        echo json_encode([
+            'success' => true,
+            'item_price' => $_SESSION['cart'][$productId]['price'],
+            'new_quantity' => (int)$quantity,
+            'message' => 'Cart updated successfully'
+        ]);
     }
     public function clearCart()
     {

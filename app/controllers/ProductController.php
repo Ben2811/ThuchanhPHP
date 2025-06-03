@@ -3,13 +3,15 @@
 require_once('app/config/database.php');
 require_once('app/models/ProductModel.php');
 require_once('app/models/CategoryModel.php');
+require_once('app/helpers/SessionHelper.php');
+
 class ProductController
 {
     private $productModel;
     private $db;
     public function __construct()
     {
-        session_start();
+        SessionHelper::init();
         $this->db = (new Database())->getConnection();
         $this->productModel = new ProductModel($this->db);
     }
@@ -22,28 +24,34 @@ class ProductController
     public function index()
     {
         $this->list();
-    }
-
-    public function show($id)
+    }    public function show($id)
     {
         $product = $this->productModel->getProductById($id);
         if ($product) {
+            // Get related products from the same category
+            $relatedProducts = $this->productModel->getRelatedProducts($id, $product->category_id, 4);
             include 'app/views/product/show.php';
         } else {
             echo "Không thấy sản phẩm.";
         }
-    }
-    public function add()
+    }    public function add()
     {
+        // Chỉ admin mới được phép thêm sản phẩm
+        SessionHelper::requireAdminWithMessage();
+        
         $categories = (new CategoryModel($this->db))->getCategories();
         include_once 'app/views/product/add.php';
     }
+
     public function save()
     {
+        SessionHelper::requireAdminWithMessage();
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST['name'] ?? '';
             $description = $_POST['description'] ?? '';
-            $price = $_POST['price'] ?? '';
+            $price = $_POST['price'] ?? 0;
+            
             $category_id = $_POST['category_id'] ?? null;
             if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
                 $image = $this->uploadImage($_FILES['image']);
@@ -67,9 +75,11 @@ class ProductController
                 header('Location: /WebBanHang/Product');
             }
         }
-    }
-    public function edit($id)
+    }    public function edit($id)
     {
+        // Chỉ admin mới được phép chỉnh sửa sản phẩm
+        SessionHelper::requireAdminWithMessage();
+        
         $product = $this->productModel->getProductById($id);
         $categories = (new CategoryModel($this->db))->getCategories();
         if ($product) {
@@ -77,14 +87,17 @@ class ProductController
         } else {
             echo "Không thấy sản phẩm.";
         }
-    }
-    public function update()
+    }    public function update()
     {
+        // Chỉ admin mới được phép cập nhật sản phẩm
+        SessionHelper::requireAdminWithMessage();
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $name = $_POST['name'];
             $description = $_POST['description'];
-            $price = $_POST['price'];
+            $price = $_POST['price'] ?? 0;
+            
             $category_id = $_POST['category_id'];
             if (isset($_FILES['image']) && $_FILES['image']['error'] == 0) {
                 $image = $this->uploadImage($_FILES['image']);
@@ -106,9 +119,11 @@ class ProductController
                 echo "Đã xảy ra lỗi khi lưu sản phẩm.";
             }
         }
-    }
-    public function delete($id)
+    }    public function delete($id)
     {
+        // Chỉ admin mới được phép xóa sản phẩm
+        SessionHelper::requireAdminWithMessage();
+        
         if ($this->productModel->deleteProduct($id)) {
             header('Location: /WebBanHang/Product');
         } else {
@@ -146,9 +161,11 @@ class ProductController
             throw new Exception("Có lỗi xảy ra khi tải lên hình ảnh.");
         }
         return $target_file;
-    }
-    public function addToCart($id)
+    }    public function addToCart($id)
     {
+        // Yêu cầu đăng nhập để thêm vào giỏ hàng
+        SessionHelper::requireLogin();
+        
         $product = $this->productModel->getProductById($id);
         if (!$product) {
             echo "Không tìm thấy sản phẩm.";
@@ -168,9 +185,11 @@ class ProductController
             ];
         }
         header('Location: /WebBanHang/Product/cart');
-    }
-    public function removeFromCart($id = null)
+    }    public function removeFromCart($id = null)
     {
+        // Yêu cầu đăng nhập
+        SessionHelper::requireLogin();
+        
         // Handle AJAX request
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['CONTENT_TYPE'] === 'application/json') {
             header('Content-Type: application/json');
@@ -206,7 +225,7 @@ class ProductController
         } else {
             echo "ID sản phẩm không hợp lệ.";
         }
-    }    public function updateCart()
+    }public function updateCart()
     {
         header('Content-Type: application/json');
         

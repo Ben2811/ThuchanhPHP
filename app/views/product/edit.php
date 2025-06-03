@@ -86,15 +86,13 @@
                                 </svg>
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Price -->
+                    </div>                    <!-- Price -->
                     <div class="group">
                         <label for="price" class="block text-sm font-semibold text-gray-700 mb-2 flex items-center">
                             <svg class="w-4 h-4 text-primary-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                             </svg>
-                            Giá (VND) <span class="text-red-500">*</span>
+                            Giá bán <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
                             <input type="number" 
@@ -102,13 +100,19 @@
                                    name="price" 
                                    required
                                    step="1000"
+                                   min="0"
                                    value="<?php echo isset($product) ? htmlspecialchars($product->price, ENT_QUOTES, 'UTF-8') : ''; ?>"
-                                   class="w-full px-3 py-3 pl-10 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm text-sm"
-                                   placeholder="0">
-                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                   class="w-full px-3 py-3 pl-10 pr-16 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300 hover:border-gray-300 bg-gray-50 focus:bg-white shadow-sm text-sm"
+                                   placeholder="Nhập giá sản phẩm...">                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
                                 <svg class="w-4 h-4 text-gray-400 group-focus-within:text-primary-500 transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                                 </svg>
+                            </div>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-600 font-bold text-sm bg-primary-50 px-2 py-1 rounded-lg border border-primary-200">
+                                VND
+                            </div>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-600 font-bold text-sm bg-primary-50 px-2 py-1 rounded-lg border border-primary-200">
+                                VND
                             </div>
                         </div>
                     </div>

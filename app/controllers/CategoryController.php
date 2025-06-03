@@ -2,6 +2,7 @@
 
 require_once('app/config/database.php');
 require_once('app/models/CategoryModel.php');
+require_once('app/helpers/SessionHelper.php');
 
 class CategoryController
 {
@@ -10,6 +11,7 @@ class CategoryController
 
     public function __construct()
     {
+        SessionHelper::init();
         $this->db = (new Database())->getConnection();
         $this->categoryModel = new CategoryModel($this->db);
     }
@@ -33,15 +35,17 @@ class CategoryController
         } else {
             echo "Không tìm thấy danh mục.";
         }
-    }
-
-    public function add()
+    }    public function add()
     {
+        // Chỉ admin mới được phép thêm danh mục
+        SessionHelper::requireAdminWithMessage();
+        
         include 'app/views/category/add.php';
-    }
-
-    public function save()
+    }    public function save()
     {
+        // Chỉ admin mới được phép lưu danh mục
+        SessionHelper::requireAdminWithMessage();
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST['name'] ?? '';
             $description = $_POST['description'] ?? '';
@@ -60,20 +64,22 @@ class CategoryController
                 exit();
             }
         }
-    }
-
-    public function edit($id)
+    }    public function edit($id)
     {
+        // Chỉ admin mới được phép chỉnh sửa danh mục
+        SessionHelper::requireAdminWithMessage();
+        
         $category = $this->categoryModel->getCategoryById($id);
         if ($category) {
             include 'app/views/category/edit.php';
         } else {
             echo "Không tìm thấy danh mục.";
         }
-    }
-
-    public function update()
+    }    public function update()
     {
+        // Chỉ admin mới được phép cập nhật danh mục
+        SessionHelper::requireAdminWithMessage();
+        
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $name = $_POST['name'];
@@ -88,10 +94,11 @@ class CategoryController
                 echo "Đã xảy ra lỗi khi cập nhật danh mục.";
             }
         }
-    }
-
-    public function delete($id)
+    }    public function delete($id)
     {
+        // Chỉ admin mới được phép xóa danh mục
+        SessionHelper::requireAdminWithMessage();
+        
         $hasProducts = $this->categoryModel->hasProducts($id);
         
         if ($hasProducts) {

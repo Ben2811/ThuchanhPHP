@@ -49,8 +49,7 @@
                     </div>
                     Quản lý sản phẩm
                 </h3>
-                <ul class="space-y-4">
-                    <li>
+                <ul class="space-y-4">                    <li>
                         <a href="/WebBanHang/Product/" class="group text-gray-300 hover:text-primary-400 transition-all duration-300 flex items-center space-x-3 hover-lift">
                             <div class="w-8 h-8 bg-gray-800/50 group-hover:bg-primary-500/20 rounded-lg flex items-center justify-center transition-colors">
                                 <i class="fas fa-box text-xs"></i>
@@ -58,6 +57,7 @@
                             <span class="font-medium">Danh sách sản phẩm</span>
                         </a>
                     </li>
+                    <?php if (SessionHelper::isAdmin()): ?>
                     <li>
                         <a href="/WebBanHang/Product/add" class="group text-gray-300 hover:text-green-400 transition-all duration-300 flex items-center space-x-3 hover-lift">
                             <div class="w-8 h-8 bg-gray-800/50 group-hover:bg-green-500/20 rounded-lg flex items-center justify-center transition-colors">
@@ -66,6 +66,7 @@
                             <span class="font-medium">Thêm sản phẩm</span>
                         </a>
                     </li>
+                    <?php endif; ?>
                     <li>
                         <a href="/WebBanHang/Product/cart" class="group text-gray-300 hover:text-accent-400 transition-all duration-300 flex items-center space-x-3 hover-lift">
                             <div class="w-8 h-8 bg-gray-800/50 group-hover:bg-accent-500/20 rounded-lg flex items-center justify-center transition-colors">

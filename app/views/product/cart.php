@@ -1,5 +1,25 @@
 <?php include 'app/views/shares/header.php'; ?>
 
+<?php 
+// Kiểm tra đăng nhập
+if (!SessionHelper::isLoggedIn()) {
+    echo '<div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 via-white to-primary-50">';
+    echo '<div class="text-center">';
+    echo '<div class="mb-6">';
+    echo '<svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">';
+    echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>';
+    echo '</svg>';
+    echo '<h2 class="text-2xl font-bold text-gray-900 mb-2">Cần đăng nhập</h2>';
+    echo '<p class="text-gray-600 mb-6">Bạn cần đăng nhập để xem giỏ hàng</p>';
+    echo '<a href="/WebBanHang/account/login" class="bg-primary-600 text-white px-6 py-3 rounded-lg hover:bg-primary-700 transition-colors">Đăng nhập</a>';
+    echo '</div>';
+    echo '</div>';
+    echo '</div>';
+    include 'app/views/shares/footer.php';
+    exit;
+}
+?>
+
 <div class="max-w-7xl mx-auto px-4 py-6 animate-fade-in">    <!-- Enhanced Header -->
     <div class="text-center mb-6">
         <div class="inline-flex items-center justify-center w-12 h-12 bg-gradient-to-r from-primary-500 to-accent-600 rounded-xl shadow-lg mb-3 animate-bounce-subtle">

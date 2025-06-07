@@ -101,5 +101,23 @@ id=:id";
         }
         return false;
     }
+
+    public function getRelatedProducts($productId, $categoryId, $limit = 4)
+    {
+        $query = "SELECT p.id, p.name, p.description, p.price, p.image, c.name as category_name
+                  FROM " . $this->table_name . " p
+                  LEFT JOIN category c ON p.category_id = c.id
+                  WHERE p.category_id = :category_id 
+                  AND p.id != :product_id 
+                  ORDER BY RAND() 
+                  LIMIT :limit";
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(':category_id', $categoryId, PDO::PARAM_INT);
+        $stmt->bindParam(':product_id', $productId, PDO::PARAM_INT);
+        $stmt->bindParam(':limit', $limit, PDO::PARAM_INT);
+        $stmt->execute();
+        $result = $stmt->fetchAll(PDO::FETCH_OBJ);
+        return $result;
+    }
 }
 ?>

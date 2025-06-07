@@ -1,7 +1,7 @@
 <?php include 'app/views/shares/header.php'; ?>
 
 <div class="max-w-5xl mx-auto animate-fade-in">
-    <!-- Enhanced Header -->
+    <!-- Header -->
     <div class="text-center mb-8">
         <div class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-500 to-accent-600 rounded-2xl shadow-xl mb-4 animate-bounce-subtle">
             <i class="fas fa-plus-circle text-white text-2xl"></i>
@@ -10,8 +10,9 @@
         <p class="text-gray-600 text-base max-w-2xl mx-auto">Tạo sản phẩm mới cho cửa hàng của bạn với giao diện hiện đại và dễ sử dụng</p>
     </div>
 
-    <!-- Enhanced Error Messages -->
-    <?php if (!empty($errors)): ?>        <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-400 p-4 mb-6 rounded-xl shadow-md animate-slide-up">
+    <!-- Error Messages -->
+    <?php if (!empty($errors)): ?>        
+        <div class="bg-gradient-to-r from-red-50 to-rose-50 border-l-4 border-red-400 p-4 mb-6 rounded-xl shadow-md animate-slide-up">
             <div class="flex">
                 <div class="flex-shrink-0">
                     <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center">
@@ -31,7 +32,8 @@
                 </div>
             </div>
         </div>
-    <?php endif; ?>    <!-- Enhanced Form -->
+    <?php endif; ?>    
+    <!-- Form -->
     <div class="glass-effect rounded-2xl shadow-xl overflow-hidden border border-white/20">
         <div class="bg-gradient-to-r from-primary-500 to-accent-600 px-6 py-4">
             <h2 class="text-xl font-bold text-white flex items-center">
@@ -58,24 +60,24 @@
                                class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-3 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300 text-base hover:border-primary-300" 
                                placeholder="Nhập tên sản phẩm..."
                                required>
-                    </div>
-
-                    <!-- Price -->
+                    </div>                    <!-- Price -->
                     <div class="group">
                         <label for="price" class="block text-sm font-bold text-gray-700 mb-2 flex items-center">
-                            <div class="w-5 h-5 bg-green-100 rounded-lg flex items-center justify-center mr-2">
-                                <i class="fas fa-dollar-sign text-green-600 text-xs"></i>
+                            <div class="w-5 h-5 bg-primary-100 rounded-lg flex items-center justify-center mr-2">
+                                <i class="fas fa-dollar-sign text-primary-600 text-xs"></i>
                             </div>
-                            Giá bán (VND) *
+                            Giá bán *
                         </label>
                         <div class="relative">
-                            <input type="number" id="price" name="price" 
-                                   class="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:ring-3 focus:ring-green-100 focus:border-green-500 transition-all duration-300 text-base hover:border-green-300" 
-                                   step="0.01" 
+                            <input type="number" 
+                                   id="price" 
+                                   name="price" 
+                                   class="w-full px-4 py-3 pr-16 border-2 border-gray-200 rounded-xl focus:ring-3 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300 text-base hover:border-primary-300" 
+                                   placeholder="Nhập giá sản phẩm..."
+                                   step="1000"
                                    min="0"
-                                   placeholder="0"
                                    required>
-                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium text-sm">
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 text-primary-600 font-bold text-sm bg-primary-50 px-2 py-1 rounded-lg border border-primary-200">
                                 VND
                             </div>
                         </div>
@@ -183,7 +185,7 @@
 </div>
 
 <script>
-// Enhanced image upload functionality
+// Image upload functionality
 const imageInput = document.getElementById('image');
 const uploadArea = document.getElementById('upload-area');
 const imagePreview = document.getElementById('image-preview');
@@ -252,7 +254,7 @@ function formatFileSize(bytes) {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
-// Form validation
+// Simple form validation
 function validateForm() {
     const name = document.getElementById('name').value.trim();
     const price = document.getElementById('price').value;
@@ -265,7 +267,7 @@ function validateForm() {
     }
 
     if (parseFloat(price) <= 0) {
-        alert('Giá sản phẩm phải lớn hơn 0!');
+        alert('Vui lòng nhập giá sản phẩm hợp lệ!');
         return false;
     }
 

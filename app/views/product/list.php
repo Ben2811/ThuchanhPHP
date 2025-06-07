@@ -27,8 +27,8 @@
                         <i class="fas fa-clock"></i>
                         <span>Cập nhật: <?php echo date('d/m/Y'); ?></span>
                     </div>
-                </div>
-            </div>
+                </div>            </div>
+            <?php if (SessionHelper::isAdmin()): ?>
             <div class="flex flex-col sm:flex-row gap-3">
                 <a href="/WebBanHang/Product/add" 
                    class="group bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white font-bold px-6 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl flex items-center space-x-2 border border-white/20">
@@ -38,6 +38,7 @@
                     <span>Thêm sản phẩm mới</span>
                 </a>
             </div>
+            <?php endif; ?>
         </div>
     </div>    <!-- Enhanced Products Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -67,18 +68,19 @@
                             <?php echo isset($product->category_name) ? htmlspecialchars($product->category_name, ENT_QUOTES, 'UTF-8') : 'Không có danh mục'; ?>
                         </span>
                     </div>
-                    
-                    <!-- Quick action overlay -->
+                      <!-- Quick action overlay -->
                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                         <div class="flex space-x-2">
                             <a href="/WebBanHang/Product/show/<?php echo $product->id; ?>" 
                                class="w-10 h-10 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 transform hover:scale-110">
                                 <i class="fas fa-eye text-sm"></i>
                             </a>
+                            <?php if (SessionHelper::isAdmin()): ?>
                             <a href="/WebBanHang/Product/edit/<?php echo $product->id; ?>" 
                                class="w-10 h-10 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 transform hover:scale-110">
                                 <i class="fas fa-edit text-sm"></i>
                             </a>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -106,10 +108,9 @@
                         <div class="w-10 h-10 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
                             <i class="fas fa-check text-white text-sm"></i>
                         </div>
-                    </div>
-
-                    <!-- Enhanced Action Buttons -->
-                    <div class="grid grid-cols-3 gap-2 pt-3">
+                    </div>                    <!-- Enhanced Action Buttons -->
+                    <?php if (SessionHelper::isAdmin()): ?>
+                    <div class="grid grid-cols-4 gap-2 pt-3">
                         <a href="/WebBanHang/Product/show/<?php echo $product->id; ?>" 
                            class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
                             <i class="fas fa-eye mb-1"></i>
@@ -120,12 +121,32 @@
                             <i class="fas fa-edit mb-1"></i>
                             <div>Sửa</div>
                         </a>
+                        <a href="/WebBanHang/Product/delete/<?php echo $product->id; ?>" 
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')"
+                           class="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                            <i class="fas fa-trash mb-1"></i>
+                            <div>Xóa</div>
+                        </a>
                         <a href="/WebBanHang/Product/addToCart/<?php echo $product->id; ?>" 
                            class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
                             <i class="fas fa-cart-plus mb-1"></i>
                             <div>Mua</div>
                         </a>
                     </div>
+                    <?php else: ?>
+                    <div class="grid grid-cols-2 gap-2 pt-3">
+                        <a href="/WebBanHang/Product/show/<?php echo $product->id; ?>" 
+                           class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                            <i class="fas fa-eye mb-1"></i>
+                            <div>Xem</div>
+                        </a>
+                        <a href="/WebBanHang/Product/addToCart/<?php echo $product->id; ?>" 
+                           class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                            <i class="fas fa-cart-plus mb-1"></i>
+                            <div>Mua</div>
+                        </a>
+                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
         <?php endforeach; ?>
@@ -141,9 +162,15 @@
                     </div>
                 </div>
                 <div class="absolute top-4 left-1/2 transform -translate-x-1/2 w-6 h-6 bg-yellow-400 rounded-full animate-bounce"></div>
-            </div>
-            <h2 class="text-4xl font-bold text-gray-900 mb-4">Chưa có sản phẩm nào</h2>
-            <p class="text-gray-600 mb-8 text-lg max-w-md mx-auto">Hãy bắt đầu bằng cách thêm sản phẩm đầu tiên cho cửa hàng của bạn!</p>
+            </div>            <h2 class="text-4xl font-bold text-gray-900 mb-4">Chưa có sản phẩm nào</h2>
+            <p class="text-gray-600 mb-8 text-lg max-w-md mx-auto">
+                <?php if (SessionHelper::isAdmin()): ?>
+                    Hãy bắt đầu bằng cách thêm sản phẩm đầu tiên cho cửa hàng của bạn!
+                <?php else: ?>
+                    Hiện tại chưa có sản phẩm nào trong cửa hàng. Vui lòng quay lại sau!
+                <?php endif; ?>
+            </p>
+            <?php if (SessionHelper::isAdmin()): ?>
             <a href="/WebBanHang/Product/add" 
                class="inline-flex items-center bg-gradient-to-r from-primary-500 to-accent-600 hover:from-primary-600 hover:to-accent-700 text-white font-bold px-10 py-5 rounded-2xl transition-all duration-300 transform hover:scale-105 hover:shadow-2xl space-x-4">
                 <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
@@ -151,6 +178,7 @@
                 </div>
                 <span class="text-lg">Thêm sản phẩm đầu tiên</span>
             </a>
+            <?php endif; ?>
         </div>
     <?php endif; ?>
 </div>

@@ -141,6 +141,11 @@ $userInfo = SessionHelper::getUserInfo();
                                 <i class="fas fa-tags text-accent-600 text-xs"></i>
                             </div>
                             <span class="font-medium text-sm">Danh mục</span>
+                        </a>                        <a href="/WebBanHang/Product/orders" class="group px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300 flex items-center space-x-2 hover-lift">
+                            <div class="w-6 h-6 bg-blue-100 group-hover:bg-blue-200 rounded-lg flex items-center justify-center transition-colors duration-300">
+                                <i class="fas fa-clipboard-list text-blue-600 text-xs"></i>
+                            </div>
+                            <span class="font-medium text-sm">Đơn hàng</span>
                         </a>
                         <a href="/WebBanHang/Category/add" class="group px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-accent-600 text-white hover:from-primary-600 hover:to-accent-700 transition-all duration-300 flex items-center space-x-2 shadow-lg hover:shadow-xl transform hover:scale-105">
                             <div class="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
@@ -239,12 +244,17 @@ $userInfo = SessionHelper::getUserInfo();
                             <i class="fas fa-plus text-green-600 text-sm"></i>
                         </div>
                         <span class="font-medium">Thêm sản phẩm</span>
-                    </a>
-                    <a href="/WebBanHang/Category" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:text-accent-600 hover:bg-accent-50 transition-all duration-300">
+                    </a>                    <a href="/WebBanHang/Category" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:text-accent-600 hover:bg-accent-50 transition-all duration-300">
                         <div class="w-8 h-8 bg-accent-100 rounded-lg flex items-center justify-center">
                             <i class="fas fa-tags text-accent-600 text-sm"></i>
                         </div>
                         <span class="font-medium">Danh sách danh mục</span>
+                    </a>
+                    <a href="/WebBanHang/Product/orders" class="flex items-center space-x-3 px-3 py-2 rounded-lg text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300">
+                        <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <i class="fas fa-clipboard-list text-blue-600 text-sm"></i>
+                        </div>
+                        <span class="font-medium">Quản lý đơn hàng</span>
                     </a>
                     <a href="/WebBanHang/Category/add" class="flex items-center space-x-3 px-3 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-accent-600 text-white shadow-lg">
                         <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">

@@ -91,9 +91,10 @@
                         Mô tả sản phẩm
                     </h4>
                     <p class="text-gray-700 text-base leading-relaxed"><?php echo htmlspecialchars($product->description, ENT_QUOTES, 'UTF-8'); ?></p>
-                </div>                <!-- Action Buttons -->
+                </div>                  <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-3 pt-3">
-                    <a href="/WebBanHang/Product/list"
+                    <!-- Nút Quay lại - Hiển thị cho tất cả -->
+                    <a href="/WebBanHang/Product/"
                        class="inline-flex items-center justify-center px-4 py-2 border-2 border-gray-300 text-gray-700 bg-white rounded-lg hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-300 font-medium shadow-sm hover:shadow-md">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -101,6 +102,19 @@
                         Quay lại
                     </a>
                     
+                    <!-- Nút Thêm vào giỏ hàng - Hiển thị cho User và Admin khi đã đăng nhập -->
+                    <?php if (SessionHelper::isLoggedIn()): ?>
+                    <a href="/WebBanHang/Product/addToCart/<?php echo $product->id; ?>" 
+                       class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-emerald-500 to-green-600 text-white rounded-lg hover:from-emerald-600 hover:to-green-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4m0 0L7 13m0 0l-2.5 5M7 13l-2.5 5M17 21a2 2 0 100-4 2 2 0 000 4zM9 21a2 2 0 100-4 2 2 0 000 4z"/>
+                        </svg>
+                        Thêm vào giỏ hàng
+                    </a>
+                    <?php endif; ?>
+                    
+                    <!-- Nút Chỉnh sửa và Xóa - Chỉ hiển thị cho Admin -->
+                    <?php if (SessionHelper::isAdmin()): ?>
                     <a href="/WebBanHang/Product/edit/<?php echo $product->id; ?>" 
                        class="inline-flex items-center justify-center px-4 py-2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white rounded-lg hover:from-yellow-600 hover:to-orange-600 focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,6 +131,7 @@
                         </svg>
                         Xóa
                     </a>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>        <!-- Related Products Section -->
@@ -127,22 +142,123 @@
                 <div class="h-1 w-16 bg-gradient-to-r from-primary-500 to-accent-500 rounded-full mx-auto mt-3"></div>
             </div>
             
-            <!-- Placeholder for related products -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <?php for($i = 0; $i < 4; $i++): ?>
-                <div class="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
-                    <div class="aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                        <svg class="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
+            <?php if (!empty($relatedProducts)): ?>
+            <!-- Related Products Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <?php foreach ($relatedProducts as $relatedProduct): ?>
+                <div class="group bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-xl transition-all duration-500 transform hover:-translate-y-2">
+                    <!-- Product Image -->
+                    <div class="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
+                        <?php if ($relatedProduct->image): ?>
+                            <img src="/WebBanHang/<?php echo $relatedProduct->image; ?>" 
+                                 alt="<?php echo htmlspecialchars($relatedProduct->name, ENT_QUOTES, 'UTF-8'); ?>"
+                                 class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <?php else: ?>
+                            <div class="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                <div class="text-center">
+                                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center mx-auto mb-2 shadow-lg">
+                                        <i class="fas fa-image text-gray-400 text-xl"></i>
+                                    </div>
+                                    <p class="text-gray-500 text-sm font-medium">Không có hình ảnh</p>
+                                </div>
+                            </div>
+                        <?php endif; ?>
+                        
+                        <!-- Category badge -->
+                        <div class="absolute top-3 left-3">
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-sm text-primary-700 border border-white/30">
+                                <i class="fas fa-tag mr-1"></i>
+                                <?php echo isset($relatedProduct->category_name) ? htmlspecialchars($relatedProduct->category_name, ENT_QUOTES, 'UTF-8') : 'Không có danh mục'; ?>
+                            </span>
+                        </div>
+                          <!-- Quick action overlay -->
+                        <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <div class="flex space-x-2">
+                                <a href="/WebBanHang/Product/show/<?php echo $relatedProduct->id; ?>" 
+                                   class="w-10 h-10 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 transform hover:scale-110">
+                                    <i class="fas fa-eye text-sm"></i>
+                                </a>
+                                <?php if (SessionHelper::isLoggedIn()): ?>
+                                <a href="/WebBanHang/Product/addToCart/<?php echo $relatedProduct->id; ?>" 
+                                   class="w-10 h-10 bg-white/20 backdrop-blur-sm text-white rounded-full flex items-center justify-center hover:bg-white/30 transition-all duration-200 transform hover:scale-110">
+                                    <i class="fas fa-cart-plus text-sm"></i>
+                                </a>
+                                <?php endif; ?>
+                            </div>
+                        </div>
                     </div>
-                    <div class="p-4">
-                        <h4 class="font-semibold text-gray-900 mb-2">Sản phẩm liên quan</h4>
-                        <p class="text-primary-600 font-bold">Giá: 000,000 VND</p>
+
+                    <!-- Product Info -->
+                    <div class="p-4 space-y-3">
+                        <!-- Product Name -->
+                        <h4 class="text-lg font-bold text-gray-900 line-clamp-2 group-hover:text-primary-600 transition-colors">
+                            <?php echo htmlspecialchars($relatedProduct->name, ENT_QUOTES, 'UTF-8'); ?>
+                        </h4>
+
+                        <!-- Description -->
+                        <p class="text-gray-600 text-sm leading-relaxed line-clamp-2">
+                            <?php echo htmlspecialchars($relatedProduct->description, ENT_QUOTES, 'UTF-8'); ?>
+                        </p>
+
+                        <!-- Price Section -->
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xl font-bold gradient-text">
+                                    <?php echo number_format($relatedProduct->price, 0, ',', '.'); ?>
+                                </span>
+                                <span class="text-gray-500 font-medium text-sm">VND</span>
+                            </div>
+                            <div class="w-8 h-8 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center shadow-lg">
+                                <i class="fas fa-check text-white text-xs"></i>
+                            </div>
+                        </div>                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-2 gap-2 pt-2">
+                            <a href="/WebBanHang/Product/show/<?php echo $relatedProduct->id; ?>" 
+                               class="bg-gradient-to-r from-primary-500 to-primary-600 hover:from-primary-600 hover:to-primary-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                                <i class="fas fa-eye mb-1"></i>
+                                <div>Xem</div>
+                            </a>
+                            <?php if (SessionHelper::isLoggedIn()): ?>
+                            <a href="/WebBanHang/Product/addToCart/<?php echo $relatedProduct->id; ?>" 
+                               class="bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                                <i class="fas fa-cart-plus mb-1"></i>
+                                <div>Mua</div>
+                            </a>
+                            <?php else: ?>
+                            <a href="/WebBanHang/Account/login" 
+                               class="bg-gradient-to-r from-gray-400 to-gray-500 hover:from-gray-500 hover:to-gray-600 text-white text-center py-2 px-3 rounded-lg transition-all duration-300 text-xs font-semibold transform hover:scale-105 hover:shadow-lg">
+                                <i class="fas fa-sign-in-alt mb-1"></i>
+                                <div>Đăng nhập</div>
+                            </a>
+                            <?php endif; ?>
+                        </div>
                     </div>
                 </div>
-                <?php endfor; ?>
+                <?php endforeach; ?>
             </div>
+            <?php else: ?>
+            <!-- Empty State for Related Products -->
+            <div class="text-center py-12">
+                <div class="relative">
+                    <div class="w-32 h-32 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <div class="w-24 h-24 bg-gradient-to-br from-primary-100 to-accent-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-boxes text-primary-500 text-4xl"></i>
+                        </div>
+                    </div>
+                </div>
+                <h4 class="text-2xl font-bold text-gray-900 mb-3">Không có sản phẩm liên quan</h4>
+                <p class="text-gray-600 mb-6 text-base max-w-md mx-auto">
+                    Hiện tại chưa có sản phẩm nào khác trong danh mục này.
+                </p>
+                <a href="/WebBanHang/Product/" 
+                   class="inline-flex items-center bg-gradient-to-r from-primary-500 to-accent-600 hover:from-primary-600 hover:to-accent-700 text-white font-bold px-8 py-4 rounded-xl transition-all duration-300 transform hover:scale-105 hover:shadow-xl space-x-3">
+                    <div class="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
+                        <i class="fas fa-search text-lg"></i>
+                    </div>
+                    <span class="text-base">Khám phá thêm sản phẩm</span>
+                </a>
+            </div>
+            <?php endif; ?>
         </div>
     </div>
 </div>

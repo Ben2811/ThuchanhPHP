@@ -3,17 +3,20 @@
 require_once('app/config/database.php');
 require_once('app/models/ProductModel.php');
 require_once('app/models/CategoryModel.php');
+require_once('app/models/OrderModel.php');
 require_once('app/helpers/SessionHelper.php');
 
 class ProductController
 {
     private $productModel;
+    private $orderModel;
     private $db;
     public function __construct()
     {
         SessionHelper::init();
         $this->db = (new Database())->getConnection();
         $this->productModel = new ProductModel($this->db);
+        $this->orderModel = new OrderModel($this->db);
     }
 
     public function list()
@@ -339,5 +342,62 @@ class ProductController
     public function orderConfirmation()
     {
         include 'app/views/product/orderConfirmation.php';
+    }
+
+    // Quản lý đơn hàng - chỉ dành cho admin
+    public function orders($page = 1)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        
+        $searchTerm = $_GET['search'] ?? '';
+        
+        if (!empty($searchTerm)) {
+            $orders = $this->orderModel->searchOrders($searchTerm, $limit, $offset);
+            $totalOrders = count($this->orderModel->searchOrders($searchTerm, 1000, 0)); // Đếm tất cả
+        } else {
+            $orders = $this->orderModel->getOrders($limit, $offset);
+            $totalOrders = $this->orderModel->getTotalOrdersCount();
+        }
+        
+        $totalPages = ceil($totalOrders / $limit);
+        $currentPage = $page;
+        
+        include 'app/views/product/orders.php';
+    }
+
+    public function orderDetail($id)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $order = $this->orderModel->getOrderById($id);
+        if (!$order) {
+            echo "Không tìm thấy đơn hàng.";
+            return;
+        }
+        
+        $orderDetails = $this->orderModel->getOrderDetails($id);
+        include 'app/views/product/orderDetail.php';
+    }
+
+    public function deleteOrder($id)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        if ($this->orderModel->deleteOrder($id)) {
+            header('Location: /WebBanHang/Product/orders?message=deleted');
+        } else {
+            header('Location: /WebBanHang/Product/orders?error=delete_failed');
+        }
+    }
+
+    public function orderStatistics()
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $statistics = $this->orderModel->getOrderStatistics();
+        include 'app/views/product/orderStatistics.php';
     }
 }

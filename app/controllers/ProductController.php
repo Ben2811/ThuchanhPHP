@@ -3,12 +3,14 @@
 require_once('app/config/database.php');
 require_once('app/models/ProductModel.php');
 require_once('app/models/CategoryModel.php');
+require_once('app/models/AccountModel.php');
 require_once('app/models/OrderModel.php');
 require_once('app/helpers/SessionHelper.php');
 
 class ProductController
 {
     private $productModel;
+    private $accountModel;
     private $orderModel;
     private $db;
     public function __construct()
@@ -16,6 +18,7 @@ class ProductController
         SessionHelper::init();
         $this->db = (new Database())->getConnection();
         $this->productModel = new ProductModel($this->db);
+        $this->accountModel = new AccountModel($this->db);
         $this->orderModel = new OrderModel($this->db);
     }
 
@@ -27,7 +30,8 @@ class ProductController
     public function index()
     {
         $this->list();
-    }    public function show($id)
+    }    
+    public function show($id)
     {
         $product = $this->productModel->getProductById($id);
         if ($product) {
@@ -37,7 +41,8 @@ class ProductController
         } else {
             echo "Không thấy sản phẩm.";
         }
-    }    public function add()
+    }   
+     public function add()
     {
         // Chỉ admin mới được phép thêm sản phẩm
         SessionHelper::requireAdminWithMessage();
@@ -162,21 +167,132 @@ class ProductController
         // Lưu file
         if (!move_uploaded_file($file["tmp_name"], $target_file)) {
             throw new Exception("Có lỗi xảy ra khi tải lên hình ảnh.");
+        }        return $target_file;
+    }
+    
+    // Quản lý người dùng - chỉ dành cho admin
+    public function users($page = 1)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $limit = 10;
+        $offset = ($page - 1) * $limit;
+        
+        $searchTerm = $_GET['search'] ?? '';
+        
+        if (!empty($searchTerm)) {
+            $users = $this->accountModel->searchUsers($searchTerm, $limit, $offset);
+            $totalUsers = count($this->accountModel->searchUsers($searchTerm, 1000, 0)); // Đếm tất cả
+        } else {
+            $users = $this->accountModel->getUsers($limit, $offset);
+            $totalUsers = $this->accountModel->getTotalUsersCount();
         }
-        return $target_file;
-    }    public function addToCart($id)
+        
+        $totalPages = ceil($totalUsers / $limit);
+        $currentPage = $page;
+        
+        include 'app/views/product/users.php';
+    }
+
+    public function userDetail($id)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $user = $this->accountModel->getUserById($id);
+        if (!$user) {
+            echo "Không tìm thấy người dùng.";
+            return;
+        }
+        
+        include 'app/views/product/userDetail.php';
+    }
+
+    public function deleteUser($id)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        if ($this->accountModel->deleteUser($id)) {
+            header('Location: /WebBanHang/Product/users?message=deleted');
+        } else {
+            header('Location: /WebBanHang/Product/users?error=delete_failed');
+        }
+    }
+
+    public function userStatistics()
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $statistics = $this->accountModel->getUserStatistics();
+        include 'app/views/product/userStatistics.php';
+    }
+
+    public function editUser($id)
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        $user = $this->accountModel->getUserById($id);
+        if (!$user) {
+            echo "Không tìm thấy người dùng.";
+            return;
+        }
+        
+        include 'app/views/product/editUser.php';
+    }
+
+    public function updateUser()
+    {
+        SessionHelper::requireAdminWithMessage();
+        
+        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $id = $_POST['id'];
+            $username = $_POST['username'];
+            $fullname = $_POST['fullname'];
+            $role = $_POST['role'];
+            $password = $_POST['password'] ?? null;
+            
+            if (!empty($password)) {
+                $result = $this->accountModel->updateUser($id, $username, $fullname, $role, $password);
+            } else {
+                $result = $this->accountModel->updateUser($id, $username, $fullname, $role);
+            }
+            
+            if ($result === true) {
+                header('Location: /WebBanHang/Product/users?message=updated');
+            } else if (is_array($result)) {
+                $errors = $result;
+                $user = $this->accountModel->getUserById($id);
+                include 'app/views/product/editUser.php';
+            } else {
+                header('Location: /WebBanHang/Product/users?error=update_failed');
+            }
+        }
+    }
+
+    public function cart()
+    {
+        $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
+        include 'app/views/product/cart.php';
+    }
+
+    // Thêm sản phẩm vào giỏ hàng
+    public function addToCart($id)
     {
         // Yêu cầu đăng nhập để thêm vào giỏ hàng
-        SessionHelper::requireLogin();
-        
+        if (!SessionHelper::isLoggedIn()) {
+            header('Location: /WebBanHang/account/login');
+            exit;
+        }
+
         $product = $this->productModel->getProductById($id);
         if (!$product) {
             echo "Không tìm thấy sản phẩm.";
             return;
         }
+
         if (!isset($_SESSION['cart'])) {
             $_SESSION['cart'] = [];
         }
+
         if (isset($_SESSION['cart'][$id])) {
             $_SESSION['cart'][$id]['quantity']++;
         } else {
@@ -187,11 +303,18 @@ class ProductController
                 'image' => $product->image
             ];
         }
+
         header('Location: /WebBanHang/Product/cart');
-    }    public function removeFromCart($id = null)
+    }
+
+    // Xóa sản phẩm khỏi giỏ hàng
+    public function removeFromCart($id = null)
     {
         // Yêu cầu đăng nhập
-        SessionHelper::requireLogin();
+        if (!SessionHelper::isLoggedIn()) {
+            header('Location: /WebBanHang/account/login');
+            exit;
+        }
         
         // Handle AJAX request
         if ($_SERVER['REQUEST_METHOD'] === 'POST' && $_SERVER['CONTENT_TYPE'] === 'application/json') {
@@ -228,8 +351,17 @@ class ProductController
         } else {
             echo "ID sản phẩm không hợp lệ.";
         }
-    }public function updateCart()
+    }
+
+    // Cập nhật số lượng sản phẩm trong giỏ hàng (AJAX)
+    public function updateCart()
     {
+        // Yêu cầu đăng nhập
+        if (!SessionHelper::isLoggedIn()) {
+            echo json_encode(['success' => false, 'message' => 'Not logged in']);
+            return;
+        }
+
         header('Content-Type: application/json');
         
         if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -277,34 +409,41 @@ class ProductController
             'new_quantity' => (int)$quantity,
             'message' => 'Cart updated successfully'
         ]);
-    }
+    }    // Xóa toàn bộ giỏ hàng
     public function clearCart()
     {
-        unset($_SESSION['cart']);
+        $_SESSION['cart'] = [];
         header('Location: /WebBanHang/Product/cart');
     }
-    public function cart()
-    {
-        $cart = isset($_SESSION['cart']) ? $_SESSION['cart'] : [];
-        include 'app/views/product/cart.php';
-    }
+
+    // Trang thanh toán
     public function checkout()
     {
+        // Yêu cầu đăng nhập để thanh toán
+        SessionHelper::requireLogin();
         include 'app/views/product/checkout.php';
     }
+
+    // Xử lý thanh toán
     public function processCheckout()
     {
+        // Yêu cầu đăng nhập
+        SessionHelper::requireLogin();
+        
         if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $name = $_POST['name'];
             $phone = $_POST['phone'];
             $address = $_POST['address'];
+            
             // Kiểm tra giỏ hàng
             if (!isset($_SESSION['cart']) || empty($_SESSION['cart'])) {
                 echo "Giỏ hàng trống.";
                 return;
             }
+            
             // Bắt đầu giao dịch
             $this->db->beginTransaction();
+            
             try {
                 // Lưu thông tin đơn hàng vào bảng orders
                 $query = "INSERT INTO orders (name, phone, address) VALUES (:name, :phone, :address)";
@@ -313,7 +452,9 @@ class ProductController
                 $stmt->bindParam(':phone', $phone);
                 $stmt->bindParam(':address', $address);
                 $stmt->execute();
+                
                 $order_id = $this->db->lastInsertId();
+                
                 // Lưu chi tiết đơn hàng vào bảng order_details
                 $cart = $_SESSION['cart'];
                 foreach ($cart as $product_id => $item) {
@@ -325,13 +466,17 @@ class ProductController
                     $stmt->bindParam(':price', $item['price']);
                     $stmt->execute();
                 }
+                
                 // Xóa giỏ hàng sau khi đặt hàng thành công
                 unset($_SESSION['cart']);
+                
                 // Commit giao dịch
                 $this->db->commit();
-                // Chuyển hướng đến trang xác nhận đơn hàng - Fix URL
+                
+                // Chuyển hướng đến trang xác nhận đơn hàng
                 header('Location: /WebBanHang/Product/orderConfirmation');
                 exit();
+                
             } catch (Exception $e) {
                 // Rollback giao dịch nếu có lỗi
                 $this->db->rollBack();
@@ -339,65 +484,12 @@ class ProductController
             }
         }
     }
+
+    // Trang xác nhận đơn hàng
     public function orderConfirmation()
     {
+        // Yêu cầu đăng nhập
+        SessionHelper::requireLogin();
         include 'app/views/product/orderConfirmation.php';
-    }
-
-    // Quản lý đơn hàng - chỉ dành cho admin
-    public function orders($page = 1)
-    {
-        SessionHelper::requireAdminWithMessage();
-        
-        $limit = 10;
-        $offset = ($page - 1) * $limit;
-        
-        $searchTerm = $_GET['search'] ?? '';
-        
-        if (!empty($searchTerm)) {
-            $orders = $this->orderModel->searchOrders($searchTerm, $limit, $offset);
-            $totalOrders = count($this->orderModel->searchOrders($searchTerm, 1000, 0)); // Đếm tất cả
-        } else {
-            $orders = $this->orderModel->getOrders($limit, $offset);
-            $totalOrders = $this->orderModel->getTotalOrdersCount();
-        }
-        
-        $totalPages = ceil($totalOrders / $limit);
-        $currentPage = $page;
-        
-        include 'app/views/product/orders.php';
-    }
-
-    public function orderDetail($id)
-    {
-        SessionHelper::requireAdminWithMessage();
-        
-        $order = $this->orderModel->getOrderById($id);
-        if (!$order) {
-            echo "Không tìm thấy đơn hàng.";
-            return;
-        }
-        
-        $orderDetails = $this->orderModel->getOrderDetails($id);
-        include 'app/views/product/orderDetail.php';
-    }
-
-    public function deleteOrder($id)
-    {
-        SessionHelper::requireAdminWithMessage();
-        
-        if ($this->orderModel->deleteOrder($id)) {
-            header('Location: /WebBanHang/Product/orders?message=deleted');
-        } else {
-            header('Location: /WebBanHang/Product/orders?error=delete_failed');
-        }
-    }
-
-    public function orderStatistics()
-    {
-        SessionHelper::requireAdminWithMessage();
-        
-        $statistics = $this->orderModel->getOrderStatistics();
-        include 'app/views/product/orderStatistics.php';
     }
 }
